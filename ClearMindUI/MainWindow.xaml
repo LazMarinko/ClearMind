@@ -1,0 +1,176 @@
+﻿<Window x:Class="ClearMindUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClearMindUI"
+        mc:Ignorable="d"
+        Title="ClearMind" Height="450" Width="800"
+        MinHeight="430" MinWidth="790"
+        FontFamily="Segoe UI"
+        Style="{StaticResource MaterialWindowStyle}"
+        PreviewMouseDown="Window_PreviewMouseDown"
+        >
+    <Grid Background="{StaticResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="16" LastChildFill="False">
+            <Label Content="Locked Procceses"
+                   DockPanel.Dock="Left"
+                   Foreground="{StaticResource TextPrimary}"
+                   FontFamily="Segoe UI Semibold"
+                   FontSize="20"
+                   VerticalAlignment="Center"/>
+            <Button Content="Add Process"
+                    Style="{StaticResource MaterialButton}"
+                    DockPanel.Dock="Right"
+                    VerticalAlignment="Center"
+                    Click="AddProcessButton_Click"/>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="7.5*"/>
+                <ColumnDefinition Width="2.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="{StaticResource PanelBackground}"
+                    CornerRadius="24,24,24,24"
+                    Margin="4,0,4,4">
+                <ListBox x:Name="ProcessListBox"
+                         Margin="20"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         ItemContainerStyle="{StaticResource ProcessListItemStyle}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         SelectionChanged="ProcessListBox_SelectionChanged">
+                    <ListBox.Resources>
+                        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+                    </ListBox.Resources>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock x:Name="ChevronText" Grid.Column="0"
+                                               Text="&#9662;"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"
+                                               Cursor="Hand"
+                                               Visibility="{Binding IsComplex, Converter={StaticResource BoolToVis}}"
+                                               MouseLeftButtonUp="ExpandToggle_Click"/>
+
+                                    <StackPanel Grid.Column="1" Cursor="Hand" MouseLeftButtonUp="ExpandToggle_Click">
+                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Semibold" FontSize="14"/>
+                                        <TextBlock Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,3,0,0">
+                                            <Run Text="{Binding SummaryText, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2" Style="{StaticResource ComplexModeToggleStyle}"
+                                            VerticalAlignment="Center"
+                                            Click="ComplexToggle_Click"/>
+                                </Grid>
+
+                                <StackPanel Visibility="{Binding ShowSchedules, Converter={StaticResource BoolToVis}}" Margin="20,10,0,0">
+                                    <ItemsControl ItemsSource="{Binding Schedules}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource ScheduleRowStyle}" MouseLeftButtonUp="ScheduleRow_Click">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="{Binding Days}" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                                                            <TextBlock Text="{Binding TimeRange}" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,2,0,0"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="1" Text="&#10005;"
+                                                                   Foreground="{StaticResource TextSecondary}"
+                                                                   FontSize="12"
+                                                                   VerticalAlignment="Center"
+                                                                   Cursor="Hand"
+                                                                   MouseLeftButtonUp="RemoveSchedule_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="+ Add Sub Entry" Style="{StaticResource MaterialButton}"
+                                            HorizontalAlignment="Stretch" FontSize="11" Padding="8,6"
+                                            Click="AddSubEntry_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Background="{StaticResource PanelBackground}"
+                    CornerRadius="24, 24, 24, 24"
+                    Margin="4,0,4,4">
+                <DockPanel>
+                    <Label Content="v1.0.0"
+                           DockPanel.Dock="Bottom"
+                           Foreground="{StaticResource TextSecondary}"
+                           FontSize="10"
+                           HorizontalAlignment="Right"
+                           Margin="0, 0, 8, 0"/>
+                    <Button x:Name="StartButton" Content="Start" Style="{StaticResource AccentButton}" HorizontalAlignment="Stretch" Margin="16,16,16,16"
+                            DockPanel.Dock="Bottom"/>
+                    <StackPanel Margin="16" VerticalAlignment="Top">
+                        <Button x:Name="DaysButton" Content="Active Days" Style="{StaticResource MaterialButton}" Margin="0,0,0,5" HorizontalAlignment="Stretch" Click="ActiveDaysButton_Click"
+                                IsEnabled="False"/>
+
+                        <TextBlock Text="Locked Time Range" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,0,0,4" HorizontalAlignment="Center"/>
+
+                        <StackPanel x:Name="TimeRangePanel" Orientation="Horizontal" Margin="0,0,0,12" HorizontalAlignment="Center"
+                                    IsEnabled="False">
+                            <TextBox x:Name="StartHourBox" Tag="Hour" Style="{StaticResource TimeSegmentBox}"
+                                     PreviewTextInput="TimeSegment_PreviewTextInput" TextChanged="TimeSegment_TextChanged" LostFocus="TimeSegment_LostFocus"
+                                     GotFocus="TimeSegment_GotFocus"
+                                     MaxLength="2" Text="00"/>
+                            <TextBlock Text=":" Foreground="{StaticResource TextPrimary}" FontSize="16" VerticalAlignment="Center" Margin="3,0"/>
+                            <TextBox x:Name="StartMinuteBox" Tag="Minute" Style="{StaticResource TimeSegmentBox}"
+                                     PreviewTextInput="TimeSegment_PreviewTextInput" TextChanged="TimeSegment_TextChanged" LostFocus="TimeSegment_LostFocus"
+                                     GotFocus="TimeSegment_GotFocus"
+                                     MaxLength="2" Text="00"/>
+
+                            <TextBlock Text="-" Foreground="{StaticResource TextSecondary}" FontSize="16" VerticalAlignment="Center" Margin="8,0"/>
+
+                            <TextBox x:Name="EndHourBox" Tag="Hour" Style="{StaticResource TimeSegmentBox}"
+                                     PreviewTextInput="TimeSegment_PreviewTextInput" TextChanged="TimeSegment_TextChanged" LostFocus="TimeSegment_LostFocus"
+                                     GotFocus="TimeSegment_GotFocus"
+                                     MaxLength="2" Text="23"/>
+                            <TextBlock Text=":" Foreground="{StaticResource TextPrimary}" FontSize="16" VerticalAlignment="Center" Margin="3,0"/>
+                            <TextBox x:Name="EndMinuteBox" Tag="Minute" Style="{StaticResource TimeSegmentBox}"
+                                     PreviewTextInput="TimeSegment_PreviewTextInput" TextChanged="TimeSegment_TextChanged" LostFocus="TimeSegment_LostFocus"
+                                     GotFocus="TimeSegment_GotFocus"
+                                     MaxLength="2" Text="59"/>
+                        </StackPanel>
+
+                        <Button x:Name="SaveButton" Content="Save" Style="{StaticResource MaterialButton}" Margin="0,0,0,12" HorizontalAlignment="Stretch"
+                                IsEnabled="False" Click="SaveButton_Click"/>
+                        <Button x:Name="RemoveButton" Content="Remove Process" Style="{StaticResource MaterialButton}" HorizontalAlignment="Stretch"
+                                IsEnabled="False" Click="RemoveButton_Click"/>
+                    </StackPanel>
+                    
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

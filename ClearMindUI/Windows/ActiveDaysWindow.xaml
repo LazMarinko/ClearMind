@@ -1,0 +1,32 @@
+<Window x:Class="ClearMindUI.ActiveDaysWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d"
+        Title="Active Days" Height="220" Width="380"
+        FontFamily="Segoe UI"
+        Style="{StaticResource MaterialWindowStyle}"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        >
+    <Grid Background="{StaticResource AppBackground}">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="Active Days" Foreground="{StaticResource TextSecondary}" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton x:Name="MondayToggle" Content="M" Style="{StaticResource DaySquircleToggle}" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="TuesdayToggle" Content="T" Style="{StaticResource DaySquircleToggle}" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="WednesdayToggle" Content="W" Style="{StaticResource DaySquircleToggle}" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="ThursdayToggle" Content="T" Style="{StaticResource DaySquircleToggle}" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="FridayToggle" Content="F" Style="{StaticResource DaySquircleToggle}" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="SaturdayToggle" Content="S" Style="{StaticResource DaySquircleToggle}" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="SundayToggle" Content="S" Style="{StaticResource DaySquircleToggle}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button Content="Cancel" Style="{StaticResource MaterialButton}" Margin="0,0,8,0" Click="CancelButton_Click"/>
+                <Button Content="Confirm" Style="{StaticResource MaterialButton}" Click="ConfirmButton_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
