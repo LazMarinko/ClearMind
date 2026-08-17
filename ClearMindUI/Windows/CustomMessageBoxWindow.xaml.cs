@@ -20,12 +20,12 @@ namespace ClearMindUI
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
+            DialogResult = true; // Returns true to indicate to the calling code that the user clicked "OK".
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            DialogResult = false; // Returns false to indicate to the calling code that the user clicked "Cancel".
         }
 
         public static void Show(Window owner, string message, string title = "Notice")
@@ -34,6 +34,7 @@ namespace ClearMindUI
             messageBox.ShowDialog();
         }
 
+        // Used only in the case of a user making changes and attempting to select a new process without saving the changes.
         public static bool Confirm(Window owner, string message, string title = "Confirm", string okText = "Yes", string cancelText = "Cancel")
         {
             var messageBox = new CustomMessageBoxWindow(message, title, okText, cancelText) { Owner = owner };

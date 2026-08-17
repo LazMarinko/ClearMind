@@ -21,14 +21,14 @@ namespace ClearMindUI
                 Name = ProcessNameBox.Text.Trim()
             };
 
-            ProcessStore.Save(CreatedEntry);
+            ProcessStore.Save(CreatedEntry); 
 
-            DialogResult = true;
+            DialogResult = true; // Closes the window and returns true to tell MainWindow that a new process was added successfully
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            DialogResult = false; // Closes the window and returns false to tell MainWindow that the user canceled the operation
         }
     }
 }

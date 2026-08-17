@@ -13,26 +13,27 @@ namespace ClearMindUI
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "ClearMind", "processes.json");
 
-        // Static method for loading the list of locked process entries from the JSON file.
         public static List<LockedProcessEntry> Load()
         {
-            if (!File.Exists(FilePath)) // Chekcs if the processes.json file exists, if not returns an empty list.
+            if (!File.Exists(FilePath))
                 return new List<LockedProcessEntry>();
 
-            var json = File.ReadAllText(FilePath); // Stores all the text from the processes.json file into a string variable called json.
-            return JsonSerializer.Deserialize<List<LockedProcessEntry>>(json) ?? new List<LockedProcessEntry>(); // Deserializes the json string into a list of LockedProcessEntry objects and returns it. If deserialization fails, returns an empty list.
+            var json = File.ReadAllText(FilePath);
+            // Deserializes the json string into a list of LockedProcessEntry objects and returns it.
+            // If deserialization fails, returns an empty list.
+            return JsonSerializer.Deserialize<List<LockedProcessEntry>>(json) ?? new List<LockedProcessEntry>(); 
         }
 
-        // Static method for saving a locked process entry to the JSON file.
         public static void Save(LockedProcessEntry process)
         {
-            var processes = Load(); // Retrieves the current list of locked process entries by calling the Load method.
-            var index = processes.FindIndex(p => p.Id == process.Id); // Used to check if the process already exists in the list by finding its index based on its Id.
+            var processes = Load();
+            var index = processes.FindIndex(p => p.Id == process.Id);
 
-            if (index >= 0) // Check for the existance of the process that is being saved.
-                processes[index] = process; // Updates the values if it already exists.
+            // If the process already exists, update it; otherwise, add it to the list.
+            if (index >= 0)
+                processes[index] = process;
             else
-                processes.Add(process); // Adds the new process to the list if it does not already exist.
+                processes.Add(process);
 
             var directory = Path.GetDirectoryName(FilePath)!;
             Directory.CreateDirectory(directory);
