@@ -20,12 +20,12 @@ namespace ClearMindUI
             CreatedSchedule = new ScheduleEntry();
             _process.Schedules.Add(CreatedSchedule);
             ProcessStore.Save(_process);
-            DialogResult = true;
+            DialogResult = true; // Returns true to indicate to MainWindows that a new schedule has been created and added to the process.
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            DialogResult = false; // Returns false to indicate to MainWindows that the user canceled the operation.
         }
     }
 }

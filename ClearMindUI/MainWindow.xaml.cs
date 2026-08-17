@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,7 +27,7 @@ namespace ClearMindUI
         private int endMinuteValue = 59;
         private static int timeTextBoxIndex; // Used to know which is the current text box being edited
         private readonly ObservableCollection<LockedProcessEntry> _lockedProcesses = new(ProcessStore.Load()); // List that contains the locked processes and their schedules
-        private ScheduleEntry? _selectedSchedule; // The currently selected schedule entry
+        private ScheduleEntry? _selectedSchedule;
 
         public MainWindow()
         {
@@ -35,20 +35,19 @@ namespace ClearMindUI
             ProcessListBox.ItemsSource = _lockedProcesses;
         }
 
-        // Handles the click of the add process button. Opens the AddProcessWindow and adds the new process to the list if confirmed.
         private void AddProcessButton_Click(object sender, RoutedEventArgs e)
         {
             var addProcessWindow = new AddProcessWindow { Owner = this };
 
-            if (addProcessWindow.ShowDialog() != true) // Checks if the user pressed confirm if not exits the method   
+            if (addProcessWindow.ShowDialog() != true)
                 return;
 
-            var newEntry = addProcessWindow.CreatedEntry; // Stores the newly created process entry from the AddProcessWindow
+            var newEntry = addProcessWindow.CreatedEntry;
 
             _lockedProcesses.Add(newEntry); // Adds it to the observable collection which will automatically update the UI
-            ProcessListBox.SelectedItem = newEntry; // Selects is the current selected item
-            ProcessListBox.ScrollIntoView(newEntry); // Scrolls the list box to make sure the new entry is visible
-            ProcessListBox.Focus(); // Sets the focus to the list box so that the user can see the new entry is selected
+            ProcessListBox.SelectedItem = newEntry;
+            ProcessListBox.ScrollIntoView(newEntry);
+            ProcessListBox.Focus();
         }
 
         private void TimeSegment_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -65,7 +64,7 @@ namespace ClearMindUI
             if (_isNormalizing)
                 return;
             if (sender is TextBox box)
-            {   // Checks which text box was changed and sets the timeTextBoxIndex accordingly. 
+            {
                 switch (box.Name)
                 {
                     case nameof(StartHourBox):
@@ -86,26 +85,25 @@ namespace ClearMindUI
                 } // Checks to see if we reached max length and if we are not in the last text box
                 if (box.Text.Length == box.MaxLength && timeTextBoxIndex < 3)
                 {
-                    box.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)); // Snaps focus to the next text box
+                    box.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                 }
-                else if (timeTextBoxIndex == 3 && box.Text.Length == box.MaxLength) // Checks if we are in the last text box and reached max length
+                else if (timeTextBoxIndex == 3 && box.Text.Length == box.MaxLength)
                 {
                     Keyboard.ClearFocus(); // Clears the focus from the text box to prevent jumping to buttons
                 }
-                
+
             }
         }
 
-        // Handles the lost focus event for the time segment text boxes
         private void TimeSegment_LostFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox box)
-                NormalizeTimeSegment(box); 
+                NormalizeTimeSegment(box);
         }
-        // Handles the key down event for the time segment text boxes and also handles the text box losing focus
+
         private void NormalizeTimeSegment(TextBox box)
         {
-            _isNormalizing = true; // Sets the normalizing flag to true to prevent further changes while normalizing
+            _isNormalizing = true;
             try
             {   // Checks if the user clicked on the text box and left it empty, if so fills it with the previous stored value
                 if (string.IsNullOrEmpty(box.Text))
@@ -133,11 +131,11 @@ namespace ClearMindUI
 
                 int max = (string)box.Tag == "Hour" ? 23 : 59; // Sets the maximum value for the box depending on its tag
 
-                if (!int.TryParse(box.Text, out int value)) // Tries to parse the text from the box to intiger
+                if (!int.TryParse(box.Text, out int value))
                     value = 0;
 
-                value = Math.Clamp(value, 0, max); // Ensures the value is within the valid range
-                switch (box.Name) // Chekcs which box is being normalized and updates the corresponding stored value
+                value = Math.Clamp(value, 0, max);
+                switch (box.Name)
                 {
                     case nameof(EndHourBox):
                         endHourValue = value;
@@ -156,26 +154,24 @@ namespace ClearMindUI
             }
             finally
             {
-                _isNormalizing = false; // Sets the normalizing flag to false to allow further changes
+                _isNormalizing = false;
             }
         }
 
-        // Handles the click event for the active days button.
         private void ActiveDaysButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedSchedule is null) // Sanity check to ensure a schedule is selected before opening the active days window
+            if (_selectedSchedule is null)
                 return;
 
-            var activeDaysWindow = new ActiveDaysWindow(_selectedSchedule) // Creates a new instance of the ActiveDaysWindow and passes the selected schedule to it
+            var activeDaysWindow = new ActiveDaysWindow(_selectedSchedule)
             {
                 Owner = this
             };
 
-            if (activeDaysWindow.ShowDialog() == true) // Checks if the user pressed confirm in the ActiveDaysWindow
-                ProcessListBox.Items.Refresh(); // Recfreshes the list box to show the updated data
+            if (activeDaysWindow.ShowDialog() == true)
+                ProcessListBox.Items.Refresh();
         }
 
-        // Handles the got focus event for the time segment text boxes
         private void TimeSegment_GotFocus(object sender, RoutedEventArgs e)
         {
             if(sender is TextBox box)
@@ -191,10 +187,10 @@ namespace ClearMindUI
             if (e.OriginalSource is not DependencyObject source || FindAncestor<TextBox>(source) is not null) // Checks if the click was inside a text box or the clicked item cant be inspected
                 return;
 
-            if (Keyboard.FocusedElement is TextBox focusedBox) // Checks if the currently focused element is a text box
-                NormalizeTimeSegment(focusedBox); // Normalizes the text box
+            if (Keyboard.FocusedElement is TextBox focusedBox)
+                NormalizeTimeSegment(focusedBox);
 
-            Keyboard.ClearFocus(); // Clears focus from the text box
+            Keyboard.ClearFocus();
         }
 
         // Generic helper that walks up the WPF visual tree and finds an ansestor of the specified type. Returns null if no ancestor is found.
@@ -214,7 +210,6 @@ namespace ClearMindUI
         private bool _isRevertingSelection; // Flag to check if we are switching back focus to the previous element that has unsaved changes
 
 
-        // Handles the change of selected processes in the ProcessListBox
         private void ProcessListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isRevertingSelection) // Sanity check to ensure when the user presses the Keep Editing button we don't go through the entire method just break it here
@@ -223,21 +218,20 @@ namespace ClearMindUI
                 return;
             }
 
-            if (e.AddedItems.Count > 0 // Checks if something new was selected
-                && e.RemovedItems.Count > 0 // Checks if there was a previous item that is now deselected, not just a first selection
-                && e.RemovedItems[0] is LockedProcessEntry previousProcess // Checks if the item removed from selection is a LockedProcessEntry
-                && _selectedSchedule is not null // Checks if theres a schedule actually loaded to check for edits
-                && HasUnsavedTimeChanges(_selectedSchedule)) // Checks if there are unsaved edits
-            {   
-                // Creates a CustomMessageBoxWindow to ask the user do they want to Keep Editing or discard their changes and stores the answer as a bool
-                bool discard = CustomMessageBoxWindow.Confirm( 
+            if (e.AddedItems.Count > 0
+                && e.RemovedItems.Count > 0
+                && e.RemovedItems[0] is LockedProcessEntry previousProcess
+                && _selectedSchedule is not null
+                && HasUnsavedTimeChanges(_selectedSchedule))
+            {
+                bool discard = CustomMessageBoxWindow.Confirm(
                     this,
                     $"You have unsaved time changes for \"{previousProcess.Name}\". Switch anyway and discard them?",
                     "Unsaved Changes",
                     "Discard",
                     "Keep Editing");
 
-                if (!discard) // Checks if the user clicked Keep Editing, and reverts the selection if they did
+                if (!discard)
                 {
                     _isRevertingSelection = true;
                     ProcessListBox.SelectedItem = previousProcess;
@@ -247,7 +241,7 @@ namespace ClearMindUI
 
             RemoveButton.IsEnabled = true;
 
-            if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess) // Sanity check to ensure the selected proces is a LockedProcesEntry
+            if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess)
             {
                 ClearSelectedSchedule();
                 return;
@@ -262,21 +256,20 @@ namespace ClearMindUI
         // Used to the enable the buttons when a schedule is selected and to set the time segment text boxes to the selected schedule values
         private void SelectSchedule(ScheduleEntry schedule)
         {
-            if (_selectedSchedule is not null) // Checks if there is a previously selected schedule and deselects it
+            if (_selectedSchedule is not null)
                 _selectedSchedule.IsSelected = false;
 
-            schedule.IsSelected = true; // Sets the bool in the newly selected schedule to true
-            _selectedSchedule = schedule; // Updates the reference to the newly selected schedule
+            schedule.IsSelected = true;
+            _selectedSchedule = schedule;
 
-            // Updates the stored values to the newly selected schedule values
             startHourValue = schedule.StartTimeHour;
             startMinuteValue = schedule.StartTimeMin;
             endHourValue = schedule.EndTimeHour;
             endMinuteValue = schedule.EndTimeMin;
 
-            _isNormalizing = true; // Sets the normalizing flag to true to prevent further changes while updating the text boxes
+            _isNormalizing = true;
             try
-            {   // Updates the text boxes to the newly selected schedule values
+            {
                 StartHourBox.Text = startHourValue.ToString("D2");
                 StartMinuteBox.Text = startMinuteValue.ToString("D2");
                 EndHourBox.Text = endHourValue.ToString("D2");
@@ -284,15 +277,14 @@ namespace ClearMindUI
             }
             finally
             {
-                _isNormalizing = false; // Sets the normalizing flag to false to allow further changes
+                _isNormalizing = false;
             }
 
-            // Enables the buttons and time range panel now that a schedule is selected
             DaysButton.IsEnabled = true;
             TimeRangePanel.IsEnabled = true;
             SaveButton.IsEnabled = true;
 
-            ProcessListBox.Items.Refresh(); // Refreshes the list box to show the updated data
+            ProcessListBox.Items.Refresh();
         }
 
         // Used to deselect the currently selected schedule and disable the buttons and time range panel
@@ -348,10 +340,9 @@ namespace ClearMindUI
         }
 
 
-        // Handles the click event for the complex toggle button. Adds a new schedule to the process if it is not complex, otherwise shows a message box.
         private void ComplexToggle_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is not LockedProcessEntry process) // Sanity check to ensure the sender is a LockedProcessEntry
+            if ((sender as FrameworkElement)?.DataContext is not LockedProcessEntry process)
                 return;
 
             if (process.IsComplex) // Checks if the process is already complex, if it is we show a message box and return to stop the user from making invalid data in the json
@@ -369,23 +360,21 @@ namespace ClearMindUI
             ProcessListBox.Items.Refresh();
         }
 
-        // Used to expand or collapse the schedules of a complex process when the user clicks on the expand/collapse button.
         private void ExpandToggle_Click(object sender, MouseButtonEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is not LockedProcessEntry process || !process.IsComplex) // Sanity check to ensure the sender is a LockedProcessEntry and that it is complex
+            if ((sender as FrameworkElement)?.DataContext is not LockedProcessEntry process || !process.IsComplex)
                 return;
 
             process.IsExpanded = !process.IsExpanded;
             ProcessListBox.Items.Refresh();
         }
 
-        // Handles the Selection of schedules inside of a complex process entry
         private void ScheduleRow_Click(object sender, MouseButtonEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is not ScheduleEntry schedule) // Sanity check to ensure the sender is a ScheduleEntry
+            if ((sender as FrameworkElement)?.DataContext is not ScheduleEntry schedule)
                 return;
 
-            var process = _lockedProcesses.FirstOrDefault(p => p.Schedules.Contains(schedule));  // Fetches the schedule's parent process from the list of locked processes
+            var process = _lockedProcesses.FirstOrDefault(p => p.Schedules.Contains(schedule));
             if (process is null || !ReferenceEquals(ProcessListBox.SelectedItem, process)) // Checks if the process exists and if the selected item differs from the process who is the parent
                 return;
 
@@ -393,19 +382,18 @@ namespace ClearMindUI
         }
 
 
-        // Handles the click of the X in the schedule sof a complex process
         private void RemoveSchedule_Click(object sender, MouseButtonEventArgs e)
         {
-            e.Handled = true; // Handles the click of the X so it doesnt call ScheduleRow_Click when clicked
+            e.Handled = true; // Handles the click of the X so it doesn't call ScheduleRow_Click when clicked
 
-            if ((sender as FrameworkElement)?.DataContext is not ScheduleEntry schedule) // Sanity check to ensure the element is a schedule
+            if ((sender as FrameworkElement)?.DataContext is not ScheduleEntry schedule)
                 return;
 
-            var process = _lockedProcesses.FirstOrDefault(p => p.Schedules.Contains(schedule)); // Fetches the parent process of the schedule to be deleted
+            var process = _lockedProcesses.FirstOrDefault(p => p.Schedules.Contains(schedule));
             if (process is null || process.Schedules.Count <= 1) // Sanity check to ensure the process exists and has more than 1 schedule
                 return;
 
-            bool wasSelected = ReferenceEquals(_selectedSchedule, schedule); // Flag to check if the schedule thats being deleted is also the currently selected schedule
+            bool wasSelected = ReferenceEquals(_selectedSchedule, schedule);
             process.Schedules.Remove(schedule);
 
             if (wasSelected)
@@ -413,34 +401,30 @@ namespace ClearMindUI
                 if (process.Schedules.Count == 1) // Checks if the schedule that was deleted was the only other schedule for the process if so, the process stops being complex
                     SelectSchedule(process.Schedules[0]);
                 else
-                    ClearSelectedSchedule(); // Clears the selection if not
+                    ClearSelectedSchedule();
             }
 
-            ProcessStore.Save(process); // Updates the current process
+            ProcessStore.Save(process);
             ProcessListBox.Items.Refresh();
         }
 
 
-        // Handles the click of the AddSubEntry button
         private void AddSubEntry_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is not LockedProcessEntry process) // Sanity check to ensure the sender is a process 
+            if ((sender as FrameworkElement)?.DataContext is not LockedProcessEntry process)
                 return;
 
-            var addSubEntryWindow = new AddSubEntryWindow(process) { Owner = this }; // Creates a SubEntryWindow and stores the result once its done
+            var addSubEntryWindow = new AddSubEntryWindow(process) { Owner = this };
 
-            if (addSubEntryWindow.ShowDialog() == true) // Checks if the user actually created a new schedule
+            if (addSubEntryWindow.ShowDialog() == true)
                 ProcessListBox.Items.Refresh();
         }
 
-        // Handles the click of the SaveButton
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Sanity check to ensure that the selected process is a LockedProcessEntry and that there is a selected schedule
-            if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess || _selectedSchedule is null) 
+            if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess || _selectedSchedule is null)
                 return;
 
-            // Sanity check to ensure that the user didn't specify an impossible time period
             if(startHourValue > endHourValue || (startHourValue == endHourValue && startMinuteValue > endMinuteValue))
             {
                 CustomMessageBoxWindow.Show(this, "Starting time is greater than end time. Please enter a valid time period.");
@@ -454,7 +438,6 @@ namespace ClearMindUI
                 return;
             }
 
-            // Save the current time value to the selected process
             _selectedSchedule.StartTimeHour = startHourValue;
             _selectedSchedule.StartTimeMin = startMinuteValue;
             _selectedSchedule.EndTimeHour = endHourValue;
@@ -465,17 +448,14 @@ namespace ClearMindUI
             ProcessListBox.Items.Refresh();
         }
 
-        // Handles the click of the RemoveButton
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess) // Sanity check to ensure the SelectedItem is a LockedProcessEntry
+            if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess)
                 return;
 
-            // Deletes the process from memory and from the screen  
             ProcessStore.Remove(selectedProcess);
             _lockedProcesses.Remove(selectedProcess);
 
-            // Clears the selection and resets the buttons.
             ClearSelectedSchedule();
             RemoveButton.IsEnabled = false;
         }

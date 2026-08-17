@@ -12,6 +12,7 @@ namespace ClearMindUI
             InitializeComponent();
             _process = process;
 
+            // Sets the toggle buttons to reflect the current active days of the process.
             MondayToggle.IsChecked = _process.ActiveDays.Contains("Mon");
             TuesdayToggle.IsChecked = _process.ActiveDays.Contains("Tue");
             WednesdayToggle.IsChecked = _process.ActiveDays.Contains("Wed");
@@ -25,6 +26,7 @@ namespace ClearMindUI
         {
             var days = new List<string>();
 
+            // Checks each toggle button and adds the corresponding day to the list if it is checked.
             if (MondayToggle.IsChecked == true) days.Add("Mon");
             if (TuesdayToggle.IsChecked == true) days.Add("Tue");
             if (WednesdayToggle.IsChecked == true) days.Add("Wed");
@@ -34,12 +36,12 @@ namespace ClearMindUI
             if (SundayToggle.IsChecked == true) days.Add("Sun");
 
             _process.ActiveDays = days;
-            DialogResult = true;
+            DialogResult = true; // Returns true to indicate to MainWindow that the user confirmed the changes.
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            DialogResult = false; // Returns false to indicate to MainWindow that the user canceled the changes.
         }
     }
 }
