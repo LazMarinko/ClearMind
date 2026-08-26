@@ -4,7 +4,8 @@
       "Bash(dotnet build *)",
       "Bash(where magick *)",
       "Bash(where convert *)",
-      "mcp__visualize__read_me"
+      "mcp__visualize__read_me",
+      "Read(//c/Users/Lazar/source/repos/ClearMind/**)"
     ]
   }
 }

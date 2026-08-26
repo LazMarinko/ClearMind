@@ -1,5 +1,8 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -29,10 +32,54 @@ namespace ClearMindUI
         private readonly ObservableCollection<LockedProcessEntry> _lockedProcesses = new(ProcessStore.Load()); // List that contains the locked processes and their schedules
         private ScheduleEntry? _selectedSchedule;
 
+        private readonly FileSystemWatcher _engineStatusWatcher;
+
         public MainWindow()
         {
             InitializeComponent();
             ProcessListBox.ItemsSource = _lockedProcesses;
+
+            UpdateStartButtonState(); // Called to set the button state on start up
+
+            // Creates the file watcher and binds the UpdateStartButtonState method to it
+            _engineStatusWatcher = EngineStatusStore.CreateWatcher(() => Dispatcher.Invoke(UpdateStartButtonState));
+            Closed += (_, _) => _engineStatusWatcher.Dispose();
+        }
+        
+        // Method used to update the start button depending on the status in the engine_status.json
+        private void UpdateStartButtonState()
+        {
+            var status = EngineStatusStore.Read();
+            StartButton.IsEnabled = status?.Status == "SLEEPING";
+        }
+
+        // Handles the click of the StartButton by sending a signal on a TCP socket to wakeup the python script
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            var status = EngineStatusStore.Read();
+            // Checks if there is no status inside the engine_status.json
+            // If there is none that means a major error occured since the script should at least be SLEEPING on app install
+            // If the complete status is null this also means no port has been allocated for signal sending
+            if (status is null)
+            {
+                CustomMessageBoxWindow.Show(this, "ClearMind engine isn't running.");
+                return;
+            }
+            // The try block will attempt to send signal using a TCP socket to the python script
+            // The signal will wakeup the python script to recheck the processes.json file
+            try
+            {
+                using var client = new TcpClient();
+                // If statement sends the signal to the dynamically allocated port located in engine_status.json
+                if (!client.ConnectAsync(IPAddress.Loopback, status.Port).Wait(2000))
+                {
+                    CustomMessageBoxWindow.Show(this, "ClearMind engine isn't running.");
+                }
+            }
+            catch (SocketException)
+            {
+                CustomMessageBoxWindow.Show(this, "ClearMind engine isn't running.");
+            }
         }
 
         private void AddProcessButton_Click(object sender, RoutedEventArgs e)
