@@ -37,6 +37,7 @@ namespace ClearMindUI
         public MainWindow()
         {
             InitializeComponent();
+            WindowMaximizeFix.Apply(this); // Keeps the maximized window from covering the taskbar
             ProcessListBox.ItemsSource = _lockedProcesses;
 
             UpdateStartButtonState(); // Called to set the button state on start up
