@@ -46,7 +46,6 @@ Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "A
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}Engine"; ValueData: """{app}\{#MyEngineExeName}"""; Flags: uninsdeletevalue
 
 [Run]
-Filename: "{app}\{#MyEngineExeName}"; Description: "Start the ClearMind engine now"; Flags: nowait postinstall skipifsilent runasoriginaluser
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch ClearMind"; Flags: nowait postinstall skipifsilent unchecked runasoriginaluser
 
 [UninstallRun]
