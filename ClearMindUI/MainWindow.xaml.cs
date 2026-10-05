@@ -1,9 +1,13 @@
+using ClearMindUI.Core;
+using ClearMindUI.Updater;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +17,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace ClearMindUI
 {
@@ -33,6 +37,7 @@ namespace ClearMindUI
         private ScheduleEntry? _selectedSchedule;
 
         private readonly FileSystemWatcher _engineStatusWatcher;
+        private readonly DispatcherTimer _editLockTimer;
 
         public MainWindow()
         {
@@ -42,16 +47,96 @@ namespace ClearMindUI
 
             UpdateStartButtonState(); // Called to set the button state on start up
 
-            // Creates the file watcher and binds the UpdateStartButtonState method to it
-            _engineStatusWatcher = EngineStatusStore.CreateWatcher(() => Dispatcher.Invoke(UpdateStartButtonState));
-            Closed += (_, _) => _engineStatusWatcher.Dispose();
+            ConfigStore.CreateConfig();
+            UpdateEditLockState();
+
+            // Creates the file watcher and binds the UpdateStartButtonState and UpdateEditLockState method to it
+            _engineStatusWatcher = EngineStatusStore.CreateWatcher(() => Dispatcher.Invoke(() =>
+            {
+                UpdateStartButtonState();
+                UpdateEditLockState();
+            }));
+
+            // Timer that calls the UpdateEditLockState method every 5 seconds to check if the edit lock state has changed
+            _editLockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            _editLockTimer.Tick += (_, _) => UpdateEditLockState();
+            _editLockTimer.Start();
+
+            Closed += (_, _) =>
+            {
+                _engineStatusWatcher.Dispose();
+                _editLockTimer.Stop();
+            };
+
+            // Runs the update check when the window is loaded
+            Loaded += MainWindow_Loaded;
         }
-        
+
+        // Checks for update and displays a CustomMessageBoxWindow if any is found. If the user decides to download the update it will run the download.
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateInfo? update = await VersionChecker.CheckForUpdateAsync();
+            if (update != null)
+            {
+                bool download = CustomMessageBoxWindow.Confirm(
+                    this,
+                    $"Version {update.Version} of ClearMind is available. Would you like to download it now?",
+                    "Update Available",
+                    "Download",
+                    "Later");
+
+                if (download)
+                    Process.Start(new ProcessStartInfo(update.DownloadUrl) { UseShellExecute = true });
+            }
+        }
+
         // Method used to update the start button depending on the status in the engine_status.json
         private void UpdateStartButtonState()
         {
             var status = EngineStatusStore.Read();
             StartButton.IsEnabled = status?.Status == "SLEEPING";
+        }
+
+        // Method used to update the edit lock state depending on the status in the engine_status.json and the allowEdits value in the config.json
+        private void UpdateEditLockState()
+        {
+            bool preventEdits;
+
+            try
+            {
+                preventEdits = ConfigStore.Load()?.allowEdits ?? false; // Fetches the value from the config.json
+            }
+            catch (Exception ex) when (ex is IOException or JsonException)
+            {
+                return;
+            }
+
+            // Variables that are used to determine the login states
+            var isLocking = EngineStatusStore.Read()?.Status == "RUNNING";
+            var now = DateTime.Now;
+            var changed = false;
+
+            // Checks each process and locks it if preventEdits is true, the engine is locking and the current time is within any of the process schedules
+            foreach (var entry in _lockedProcesses)
+            {
+                var lockedNow = preventEdits && isLocking && entry.Schedules.Any(schedule => schedule.IsActiveAt(now));
+
+                if (entry.IsLockedNow == lockedNow)
+                    continue;
+
+                entry.IsLockedNow = lockedNow;
+                changed = true;
+            }
+
+            if (changed)
+                ProcessListBox.Items.Refresh();
+
+            UpdateEditPanelState();
+        }
+
+        private void UpdateEditPanelState()
+        {
+            EditPanel.IsEnabled = ProcessListBox.SelectedItem is not LockedProcessEntry { IsLockedNow: true };
         }
 
         // Handles the click of the StartButton by sending a signal on a TCP socket to wakeup the python script
@@ -96,6 +181,13 @@ namespace ClearMindUI
             ProcessListBox.SelectedItem = newEntry;
             ProcessListBox.ScrollIntoView(newEntry);
             ProcessListBox.Focus();
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow { Owner = this };
+            settingsWindow.ShowDialog();
+            UpdateEditLockState();
         }
 
         private void TimeSegment_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -257,7 +349,6 @@ namespace ClearMindUI
 
         private bool _isRevertingSelection; // Flag to check if we are switching back focus to the previous element that has unsaved changes
 
-
         private void ProcessListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isRevertingSelection) // Sanity check to ensure when the user presses the Keep Editing button we don't go through the entire method just break it here
@@ -287,6 +378,7 @@ namespace ClearMindUI
                 }
             }
 
+            UpdateEditPanelState();
             RemoveButton.IsEnabled = true;
 
             if (ProcessListBox.SelectedItem is not LockedProcessEntry selectedProcess)

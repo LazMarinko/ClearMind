@@ -24,11 +24,18 @@
                    FontFamily="Segoe UI Semibold"
                    FontSize="20"
                    VerticalAlignment="Center"/>
-            <Button Content="Add Process"
-                    Style="{StaticResource MaterialButton}"
-                    DockPanel.Dock="Right"
-                    VerticalAlignment="Center"
-                    Click="AddProcessButton_Click"/>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="Add Process"
+                        Style="{StaticResource MaterialButton}"
+                        VerticalAlignment="Center"
+                        Click="AddProcessButton_Click"/>
+                <Button Content="&#xE713;"
+                        Style="{StaticResource IconButtonStyle}"
+                        VerticalAlignment="Center"
+                        Margin="8,0,0,0"
+                        ToolTip="Settings"
+                        Click="SettingsButton_Click"/>
+            </StackPanel>
         </DockPanel>
 
         <Grid Grid.Row="1">
@@ -124,7 +131,7 @@
                     CornerRadius="24, 24, 24, 24"
                     Margin="4,0,4,4">
                 <DockPanel>
-                    <Label Content="v1.0.0"
+                    <Label Content="v1.1.0"
                            DockPanel.Dock="Bottom"
                            Foreground="{StaticResource TextSecondary}"
                            FontSize="10"
@@ -132,7 +139,7 @@
                            Margin="0, 0, 8, 0"/>
                     <Button x:Name="StartButton" Content="Start" Style="{StaticResource AccentButton}" HorizontalAlignment="Stretch" Margin="16,16,16,16"
                             DockPanel.Dock="Bottom" Click="StartButton_Click" IsEnabled="False"/>
-                    <StackPanel Margin="16" VerticalAlignment="Top">
+                    <StackPanel x:Name="EditPanel" Margin="16" VerticalAlignment="Top">
                         <Button x:Name="DaysButton" Content="Active Days" Style="{StaticResource MaterialButton}" Margin="0,0,0,5" HorizontalAlignment="Stretch" Click="ActiveDaysButton_Click"
                                 IsEnabled="False"/>
 

@@ -16,6 +16,9 @@ namespace ClearMindUI
         public bool IsExpanded { get; set; } = true; // Indicates whether the entry is expanded in the UI to show its schedules.
 
         [JsonIgnore]
+        public bool IsLockedNow { get; set; }
+
+        [JsonIgnore]
         public bool IsComplex => Schedules.Count > 1; // Indicates whether the entry has multiple schedules.
 
         [JsonIgnore]
